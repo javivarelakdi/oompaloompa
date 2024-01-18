@@ -20,12 +20,12 @@ export interface Worker {
 }
 export const fetchWorkers = createAsyncThunk<
   any[],
-  void,
+  number,
   { rejectValue: string }
->("worker/fetchWorkers", async (_, thunkAPI) => {
+>("worker/fetchWorkers", async (page, thunkAPI) => {
   try {
     const response = await fetch(
-      "https://2q2woep105.execute-api.eu-west-1.amazonaws.com/napptilus/oompa-loompas"
+      `https://2q2woep105.execute-api.eu-west-1.amazonaws.com/napptilus/oompa-loompas?page=${page}`
     );
     const data = await response.json();
     const workers = data.results;
@@ -56,7 +56,17 @@ export const workersSlice = createSlice({
       })
       .addCase(fetchWorkers.fulfilled, (state, action) => {
         state.loading = false;
-        state.workers = action.payload;
+        const workers = [...state.workers, ...action.payload];
+        // this is to avoid first double useEffect on first load with strict mode
+        const uniqueWorkers = workers.reduce((accumulator, current) => {
+          if (
+            !accumulator.find((item: { id: number }) => item.id === current.id)
+          ) {
+            accumulator.push(current);
+          }
+          return accumulator;
+        }, []);
+        state.workers = uniqueWorkers;
       })
       .addCase(fetchWorkers.rejected, (state, action) => {
         state.loading = false;

@@ -7,7 +7,11 @@ type CardProps = {
   name: string;
   description: string;
 };
-export default function Card({ image, name, description }: CardProps) {
+export default function Card({
+  image,
+  name,
+  description,
+}: Readonly<CardProps>) {
   return (
     <Flex columns={{ "@bpSmall": 6, "@bpMedium": 4, "@bpLarge": 3 }}>
       <Box css={{ padding: "$tiny" }}>
