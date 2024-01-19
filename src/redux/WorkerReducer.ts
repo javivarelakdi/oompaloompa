@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export interface Worker {
   first_name: string;
@@ -18,8 +18,13 @@ export interface Worker {
   height: number;
   id: number;
 }
+
+export interface FilterWorkersPayload {
+  filteredList: Worker[];
+}
+
 export const fetchWorkers = createAsyncThunk<
-  any[],
+  any,
   number,
   { rejectValue: string }
 >("worker/fetchWorkers", async (page, thunkAPI) => {
@@ -28,7 +33,7 @@ export const fetchWorkers = createAsyncThunk<
       `https://2q2woep105.execute-api.eu-west-1.amazonaws.com/napptilus/oompa-loompas?page=${page}`
     );
     const data = await response.json();
-    const workers = data.results;
+    const workers = data;
     return workers;
   } catch (error) {
     return thunkAPI.rejectWithValue("Failed to fetch workers data.");
@@ -47,7 +52,14 @@ const initialState: WorkersState = {
 export const workersSlice = createSlice({
   name: "workers",
   initialState,
-  reducers: {},
+  reducers: {
+    filterWorkers(
+      state: WorkersState,
+      action: PayloadAction<FilterWorkersPayload>
+    ) {
+      state.workers = action.payload.filteredList;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchWorkers.pending, (state) => {
@@ -56,16 +68,25 @@ export const workersSlice = createSlice({
       })
       .addCase(fetchWorkers.fulfilled, (state, action) => {
         state.loading = false;
-        const workers = [...state.workers, ...action.payload];
+
+        const workers =
+          action.payload.current !== 1
+            ? [...state.workers, ...action.payload.results]
+            : action.payload.results;
         // this is to avoid first double useEffect on first load with strict mode
-        const uniqueWorkers = workers.reduce((accumulator, current) => {
-          if (
-            !accumulator.find((item: { id: number }) => item.id === current.id)
-          ) {
-            accumulator.push(current);
-          }
-          return accumulator;
-        }, []);
+        const uniqueWorkers = workers.reduce(
+          (accumulator: any[], current: { id: number }) => {
+            if (
+              !accumulator.find(
+                (item: { id: number }) => item.id === current.id
+              )
+            ) {
+              accumulator.push(current);
+            }
+            return accumulator;
+          },
+          []
+        );
         state.workers = uniqueWorkers;
       })
       .addCase(fetchWorkers.rejected, (state, action) => {
@@ -74,4 +95,7 @@ export const workersSlice = createSlice({
       });
   },
 });
+
+export const { filterWorkers } = workersSlice.actions;
+
 export default workersSlice.reducer;
