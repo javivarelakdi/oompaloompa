@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Gallery from "./views/gallery";
+import Single from "./views/single";
 import { useSelector } from "react-redux";
 import { useAppDispatch, RootState, AppDispatch } from "./redux/index";
 import { fetchWorkers, filterWorkers } from "./redux/WorkerReducer";
@@ -8,6 +9,8 @@ import { Box } from "./components/box";
 import { Text } from "./components/text";
 import { Flex } from "./components/flex";
 import { Button } from "./components/button";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 function App() {
   globalCssFunction();
@@ -56,61 +59,76 @@ function App() {
   }
 
   return (
-    <Box>
-      <Box
-        css={{
-          backgroundColor: "$third",
-          padding: "$medium",
-          color: "#fff",
-        }}
-      >
-        <Text textStyle="heading-xxs">Oompa Loompa´s Crew</Text>
-      </Box>
-      <Flex
-        justify="end"
-        css={{
-          padding: "$medium",
-        }}
-      >
-        <form onSubmit={handleSubmitSearch}>
-          <input ref={searchInputRef} type="search" />
-        </form>
-      </Flex>
+    <Router>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <>
+              <Box
+                css={{
+                  backgroundColor: "$third",
+                  padding: "$medium",
+                  color: "#fff",
+                }}
+              >
+                <Link to="/">
+                  <Text textStyle="heading-xxs">Oompa Loompa´s Crew</Text>
+                </Link>
+              </Box>
+              <Flex
+                justify="end"
+                css={{
+                  padding: "$medium",
+                }}
+              >
+                <form onSubmit={handleSubmitSearch}>
+                  <input ref={searchInputRef} type="search" />
+                </form>
+              </Flex>
 
-      <Flex
-        justify="center"
-        css={{
-          marginTop: "$medium",
-          marginBottom: "$tiny",
-        }}
-      >
-        <Text textStyle="heading-m">Find your Oompa Loompa</Text>
-      </Flex>
-      <Flex
-        justify="center"
-        css={{
-          marginTop: "$tiny",
-          marginBottom: "$medium",
-        }}
-      >
-        <Text textStyle="heading-xs">There are more than 100k</Text>
-      </Flex>
-      <Gallery workerList={workerListSelector} />
-      <Flex
-        justify="center"
-        css={{
-          marginTop: "$tiny",
-          marginBottom: "$medium",
-        }}
-      >
-        {!isFiltered && (
-          <Button onClick={() => setPage(page + 1)}>Load more</Button>
-        )}
-        {isFiltered && (
-          <Button onClick={() => handleFetch(1)}>Clear filter</Button>
-        )}
-      </Flex>
-    </Box>
+              <Flex
+                justify="center"
+                css={{
+                  marginTop: "$medium",
+                  marginBottom: "$tiny",
+                }}
+              >
+                <Text textStyle="heading-m">Find your Oompa Loompa</Text>
+              </Flex>
+              <Flex
+                justify="center"
+                css={{
+                  marginTop: "$tiny",
+                  marginBottom: "$medium",
+                }}
+              >
+                <Text textStyle="heading-xs">There are more than 100k</Text>
+              </Flex>
+              <Gallery workerList={workerListSelector} />
+              <Flex
+                justify="center"
+                css={{
+                  marginTop: "$tiny",
+                  marginBottom: "$medium",
+                }}
+              >
+                {!isFiltered && (
+                  <Button onClick={() => setPage(page + 1)}>Load more</Button>
+                )}
+                {isFiltered && (
+                  <Button onClick={() => handleFetch(1)}>Clear filter</Button>
+                )}
+              </Flex>
+            </>
+          }
+        />
+        <Route
+          path="/:id"
+          element={<Single workerList={workerListSelector} />}
+        />
+      </Routes>
+    </Router>
   );
 }
 
